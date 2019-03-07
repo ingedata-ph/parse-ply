@@ -69,6 +69,7 @@ function PLYParser() {
   this.state = PARSER_STATE.BEGIN;
   this.format = PLY_FORMAT.UNKNOWN;
   this.elements = [];
+  this.comments = [];
   this.offset = 0;
   this.buffers = [];
   this.current_element = 0;
@@ -228,6 +229,15 @@ PLYParser.prototype.createResult = function() {
       props[prop.name] = prop.data;
     }
     result[element.name] = props;
+  }
+  if (this.comments.length > 0) {
+    result.comments = [];
+    this.comments.forEach((commentArray, i) => {
+      result.comments[i] = [];
+      for(let j=1; j<commentArray.length; j++) {
+        result.comments[i].push(commentArray[j]);
+      }
+    });
   }
   return result;
 }
@@ -438,6 +448,13 @@ PLYParser.prototype.processToken = function() {
       }
       var toks = l.trim().split(" ");
       if(toks.length > 0 && toks[0] === "comment") {
+        // console.log("Comment in format");
+        let tokString = "";
+        for (let i=0; i < toks.length; i++) {
+          tokString += ` ${toks[i]}`;
+        }
+        // console.log(tokString);
+        this.comments.push(toks);
         return true;
       }
       if(toks.length !== 3 || toks[0] !== "format" || toks[2] !== "1.0") {
@@ -515,6 +532,13 @@ PLYParser.prototype.processToken = function() {
         break;
         
         case "comment":
+          // console.log("Comment in header");
+          let tokString = "";
+          for (let i=0; i < toks.length; i++) {
+            tokString += ` ${toks[i]}`;
+          }
+          // console.log(tokString);
+          this.comments.push(toks);
           return true;
         break;
         

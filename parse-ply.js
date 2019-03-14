@@ -98,6 +98,9 @@ PLYParser.prototype.getline = function(max_len) {
           this.buffers.splice(0, cbuf);
         }
         this.last_line = prefix.join('');
+        if (this.last_line.length > 0 && this.last_line.charCodeAt(this.last_line.length - 1) === 13) { // Check for Windows line endings
+          this.last_line = this.last_line.slice(0, this.last_line.length - 1);
+        }
         return this.last_line;
       } else {
         this.last_line = this.buffers[0].slice(this.offset, ptr).toString();
@@ -105,6 +108,9 @@ PLYParser.prototype.getline = function(max_len) {
         if(this.offset >= this.buffers[cbuf].length) {
           this.offset = 0;
           this.buffers.shift();
+        }
+        if (this.last_line.length > 0 && this.last_line.charCodeAt(this.last_line.length - 1) === 13) { // Check for Windows line endings
+          this.last_line = this.last_line.slice(0, this.last_line.length - 1);
         }
         return this.last_line;
       }
@@ -428,7 +434,7 @@ PLYParser.prototype.processProperty = function(name, type) {
 PLYParser.prototype.processToken = function() {
   switch(this.state) {
     case PARSER_STATE.BEGIN:
-      var l = this.getline(4);
+      var l = this.getline(3+1); // To account for possible Windows line endings
       if(!l) {
         return false;
       }
@@ -442,7 +448,7 @@ PLYParser.prototype.processToken = function() {
     break;
     
     case PARSER_STATE.FORMAT:
-      var l = this.getline(64);
+      var l = this.getline(64+1); // To account for possible Windows line endings
       if(!l) {
         return false;
       }
@@ -484,7 +490,7 @@ PLYParser.prototype.processToken = function() {
     break;
   
     case PARSER_STATE.HEADER:
-      var l = this.getline(4096);
+      var l = this.getline(4096 + 1);
       if(!l) {
         return false;
       }
